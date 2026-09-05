@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#08111f" />
+  <meta name="description" content="INDRA — adaptive risk-aware path planning for unstructured Indian roads." />
+  <title>INDRA — Adaptive Road Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-cluster">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="brand-copy">
+          <div class="brand-line">
+            <h1>INDRA</h1>
+            <span class="live-pill"><span class="live-dot"></span> LIVE SIMULATION</span>
+          </div>
+          <p>Adaptive Risk-Aware Navigation for Unstructured Indian Roads</p>
+        </div>
+      </div>
+
+      <div class="top-controls">
+        <label class="scenario-control">
+          <span>SCENARIO</span>
+          <select id="scenarioSelect" aria-label="Select driving scenario">
+            <option value="village">1 • Unmarked Village Road</option>
+            <option value="intersection">2 • Busy Unsignalized Intersection</option>
+            <option value="highway">3 • Highway Merge</option>
+            <option value="market">4 • Dense Market</option>
+            <option value="cattle">5 • Sudden Cattle Crossing</option>
+          </select>
+        </label>
+        <button id="resetBtn" class="reset-btn" type="button"><span class="reset-icon">↻</span> Reset</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="sim-stage" aria-label="Autonomous driving simulation">
+        <div class="canvas-frame">
+          <canvas id="simCanvas"></canvas>
+          <div class="stage-topline">
+            <div class="stage-badge"><span class="stage-dot"></span> CLOSED-LOOP CONTROL</div>
+            <div class="stage-badge muted">SIMULATED SENSING</div>
+          </div>
+          <div class="stage-caption">
+            <div>
+              <span class="eyebrow">ACTIVE TESTBED</span>
+              <strong id="stageScenario">Indian mixed-traffic environment</strong>
+            </div>
+            <div class="telemetry-chip"><span>PATH</span><b id="stagePath">—</b></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="Simulation telemetry dashboard">
+        <section class="hero-card">
+          <div class="section-kicker">LIVE DECISION</div>
+          <div class="status-line">
+            <div id="decisionStatus" class="status">INITIALIZING</div>
+            <span class="system-pulse"><span></span> AUTONOMOUS</span>
+          </div>
+          <div class="headline-metrics">
+            <div class="headline-metric">
+              <span>Risk state</span>
+              <strong id="mRisk">—</strong>
+            </div>
+            <div class="headline-metric">
+              <span>Selected path</span>
+              <strong id="mPath">—</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card scenario-card">
+          <div class="card-head">
+            <div>
+              <span class="section-kicker">ACTIVE SCENARIO</span>
+              <h2 id="mScenario">—</h2>
+            </div>
+            <div class="scenario-number">PS<br><b>26037</b></div>
+          </div>
+          <div class="micro-status"><span class="mini-dot"></span> Mixed traffic • lane-independent planning</div>
+        </section>
+
+        <section class="panel-card">
+          <div class="card-title"><span class="section-kicker">PERCEPTION</span><span class="tiny-label">3 SENSOR CHANNELS</span></div>
+          <div class="metric-grid">
+            <div class="metric-tile"><span>Tracked objects</span><b id="mObjects">0</b></div>
+            <div class="metric-tile"><span>Closest object</span><b id="mClosest">—</b></div>
+            <div class="metric-tile"><span>Min clearance</span><b id="mClearance">—</b></div>
+          </div>
+          <div class="sensor-list">
+            <div class="sensor-item"><span class="sensor-icon camera">CAM</span><div><b>Camera abstraction</b><small>Object class</small></div><span class="sensor-state">ON</span></div>
+            <div class="sensor-item"><span class="sensor-icon lidar">LDR</span><div><b>LiDAR geometry</b><small>Spatial clearance</small></div><span class="sensor-state">ON</span></div>
+            <div class="sensor-item"><span class="sensor-icon radar">RAD</span><div><b>Radar velocity</b><small>Relative motion</small></div><span class="sensor-state">ON</span></div>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <div class="card-title"><span class="section-kicker">PLANNER</span><span class="tiny-label">PREDICTIVE LOCAL PLANNING</span></div>
+          <div class="metric-grid planner-grid">
+            <div class="metric-tile"><span>Replans</span><b id="mReplans">0</b></div>
+            <div class="metric-tile"><span>Latency</span><b id="mLatency">—</b></div>
+            <div class="metric-tile"><span>Prediction horizon</span><b>180 fr</b></div>
+          </div>
+          <div class="path-stack">
+            <div class="path-row enhanced"><span><i class="path-dot left"></i>LEFT</span><b id="costLeft">—</b></div>
+            <div class="path-row enhanced"><span><i class="path-dot center"></i>CENTER</span><b id="costCenter">—</b></div>
+            <div class="path-row enhanced"><span><i class="path-dot right"></i>RIGHT</span><b id="costRight">—</b></div>
+          </div>
+        </section>
+
+        <section class="panel-card results-card">
+          <div class="card-title"><span class="section-kicker">RUN RESULT</span><span class="tiny-label">SAFETY TELEMETRY</span></div>
+          <div class="result-grid">
+            <div><span>Collisions</span><b id="mCollisions">0</b></div>
+            <div><span>Distance</span><b id="mDistance">0</b></div>
+            <div><span>Completion</span><b id="mCompletion">RUNNING</b></div>
+            <div><span>Mode</span><b id="mMode">—</b></div>
+          </div>
+        </section>
+
+        <section class="legend-card">
+          <div class="legend-title">VISUAL LEGEND</div>
+          <div class="legend-grid">
+            <span><i class="legend-line path"></i> Planned path</span>
+            <span><i class="legend-box high"></i> High risk</span>
+            <span><i class="legend-box medium"></i> Medium risk</span>
+            <span><i class="legend-box low"></i> Low risk</span>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="footer-bar">
+      <div><strong>INDRA</strong> • SIH PS 26037 • Proof-of-concept adaptive planner</div>
+      <div class="footer-note">Simulated/artificial sensing · production target: RoadRunner + MATLAB/Simulink</div>
+    </footer>
+  </div>
+
+  <script src="utils.js"></script>
+  <script src="road.js"></script>
+  <script src="sensor.js"></script>
+  <script src="car.js"></script>
+  <script src="agent.js"></script>
+  <script src="planner.js"></script>
+  <script src="scenario.js"></script>
+  <script src="main.js"></script>
+  <script>
+    (function () {
+      const select = document.getElementById('scenarioSelect');
+      const stageScenario = document.getElementById('stageScenario');
+      const stagePath = document.getElementById('stagePath');
+      const scenarioNames = {
+        village: 'Unmarked village road',
+        intersection: 'Busy unsignalized intersection',
+        highway: 'Highway merge',
+        market: 'Dense market',
+        cattle: 'Sudden cattle crossing'
+      };
+      function syncStage() {
+        if (stageScenario && select) stageScenario.textContent = scenarioNames[select.value] || 'Indian mixed-traffic environment';
+      }
+      syncStage();
+      if (select) select.addEventListener('change', syncStage);
+      const originalInterval = window.setInterval;
+      window.setInterval = function(fn, delay, ...args) {
+        return originalInterval(function() {
+          fn.apply(this, args);
+          const path = document.getElementById('mPath');
+          if (path && stagePath) stagePath.textContent = path.textContent || '—';
+        }, delay);
+      };
+    }());
+  </script>
+</body>
+</html>
